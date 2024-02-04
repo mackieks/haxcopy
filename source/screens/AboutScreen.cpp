@@ -1,14 +1,14 @@
 #include "AboutScreen.hpp"
 
 AboutScreen::AboutScreen() {
-    creditList.emplace_back("Developers:", "Maschell");
-    creditList.emplace_back("", "Based on WiiUIdent by GaryOderNichts");
+    creditList.emplace_back("Developers:", "YveltalGriffin");
+    creditList.emplace_back("", "Based on WiiUCrashLogDumper by Maschell\n and WiiUIdent by GaryOderNichts");
 
     fontList.emplace_back("Main Font:", "Wii U System Font");
     fontList.emplace_back("Icon Font:", "FontAwesome");
     fontList.emplace_back("Monospace Font:", "Terminus Font");
 
-    linkList.emplace_back("", ScreenListElement{"github.com/wiiu-env/WiiUCrashLogDumper", true});
+    linkList.emplace_back("", ScreenListElement{"https://github.com/mackieks/haxcopy", true});
 }
 
 AboutScreen::~AboutScreen() = default;

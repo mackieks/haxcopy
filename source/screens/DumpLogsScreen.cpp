@@ -5,18 +5,12 @@
 #include <ctime>
 
 DumpLogsScreen::DumpLogsScreen() {
-    std::time_t t = std::time(nullptr);
-    std::string datetime(100, 0);
-    datetime.resize(std::strftime(&datetime[0], datetime.size(), "%F_%H-%M-%S", std::localtime(&t)));
-    std::string serialId;
-    if (!Utils::GetSerialId(serialId)) {
-        mDumpState = DUMP_STATE_ERROR;
-    }
-
-    mDestinationDirectory = CRASH_LOG_DESTINATION_PATH "/" + serialId + "/" + datetime;
+    mDestinationDirectory = HAX_DESTINATION_PATH;
 }
 
 DumpLogsScreen::~DumpLogsScreen() = default;
+
+bool subdirectoryExists = false;
 
 
 void DumpLogsScreen::DrawSimpleText(const std::string &text) const {
@@ -32,22 +26,22 @@ void DumpLogsScreen::DrawSimpleText(const std::vector<std::string> &items) const
 }
 
 void DumpLogsScreen::Draw() {
-    DrawTopBar("Dump Logs To SD");
+    DrawTopBar("Copy /hax to SLC");
     switch (mDumpState) {
         case DUMP_STATE_SELECT:
-            DrawSimpleText("Press \ue000 to dump logs to SD");
+            DrawSimpleText("Press \ue000 to copy hax folder to SLC");
             break;
         case DUMP_STATE_ERROR:
-            DrawSimpleText("Dumping failed. Press \ue001 to return");
+            DrawSimpleText("Copying failed. Press \ue001 to return");
             break;
         case DUMP_STATE_CREATE_DIRECTORY:
         case DUMP_STATE_OPEN_DIR:
-            DrawSimpleText("Preparing dump");
+            DrawSimpleText("Preparing to copy...");
             break;
         case DUMP_STATE_COPY_FILE: {
             if (!mFilesToCopy.empty()) {
-                std::string sourcePath = "slc:/sys/log/" + mFilesToCopy.front();
-                std::string log        = Utils::sprintf("Dumping %s", sourcePath.c_str());
+                std::string sourcePath = "sd:/hax/" + mFilesToCopy.front();
+                std::string log        = Utils::sprintf("Copying %s", sourcePath.c_str());
                 DrawSimpleText(log);
             } else {
                 DrawSimpleText("Copying files...");
@@ -55,10 +49,10 @@ void DumpLogsScreen::Draw() {
             break;
         }
         case DUMP_STATE_DUMPING_DONE: {
-            auto userFriendlyDestinationPath = "sd:/" + mDestinationDirectory.substr(strlen("fs:/vol/external01/"));
-            DrawSimpleText((std::vector<std::string>){"Dumping done!",
+            auto userFriendlyDestinationPath = "slc:/sys/hax/";
+            DrawSimpleText((std::vector<std::string>){"Copying done!",
                                                       "",
-                                                      "Logs saved to:",
+                                                      "Files copied to:",
                                                       userFriendlyDestinationPath});
             break;
         }
@@ -92,13 +86,11 @@ bool DumpLogsScreen::Update(Input &input) {
             }
             struct dirent *dp;
             while ((dp = readdir(mSourceDirectoryHandle)) != nullptr) {
-                if (std::string_view(dp->d_name).ends_with(".dsc")) {
-                    continue;
-                }
                 std::string sourceFullPath = mSourceDirectory + "/" + dp->d_name;
                 struct stat filestat {};
                 if (stat(sourceFullPath.c_str(), &filestat) < 0 ||
-                    (filestat.st_mode & S_IFMT) == S_IFDIR) {
+                    (filestat.st_mode & S_IFMT) == S_IFDIR) { // if directory
+                    subdirectoryExists = true;
                     continue;
                 }
                 mFilesToCopy.emplace(dp->d_name);
@@ -117,7 +109,14 @@ bool DumpLogsScreen::Update(Input &input) {
                 }
                 break;
             } else {
-                mDumpState = DUMP_STATE_DUMPING_DONE;
+                if (subdirectoryExists) {   // copying done and we have subdir to enter
+                    mSourceDirectory      = HAX_PLUGINS_SOURCE_PATH;
+                    mDestinationDirectory = HAX_PLUGINS_DESTINATION_PATH;
+                    subdirectoryExists    = false;
+                    mDumpState            = DUMP_STATE_CREATE_DIRECTORY;
+                    break;
+                }
+                else mDumpState = DUMP_STATE_DUMPING_DONE;
                 break;
             }
         }

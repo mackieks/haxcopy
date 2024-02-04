@@ -5,8 +5,8 @@
 
 MenuScreen::MenuScreen()
     : mEntries({
-              {MENU_ID_DUMP_LOGS, {0xf022, "Dump Logs"}},
-              {MENU_ID_ABOUT, {0xf05a, "About WiiUCrashLogDumper"}},
+              {MENU_ID_DUMP_LOGS, {0xf0C5, "Copy hax folder to SLC"}},
+              {MENU_ID_ABOUT, {0xf05a, "About haxcopy"}},
       }) {}
 
 MenuScreen::~MenuScreen() = default;

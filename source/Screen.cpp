@@ -7,9 +7,9 @@ void Screen::DrawTopBar(const char *name) {
     Gfx::DrawRectFilled(0, 0, Gfx::SCREEN_WIDTH, 75, Gfx::COLOR_BARS);
 
     // draw top bar content
-    Gfx::DrawIcon(32, 75 / 2, 60, Gfx::COLOR_TEXT, 0xf0C7, Gfx::ALIGN_VERTICAL);
-    Gfx::Print(128, 75 / 2, 60, Gfx::COLOR_TEXT, "WiiUCrashLogDumper", Gfx::ALIGN_VERTICAL);
-    Gfx::Print(Gfx::GetTextWidth(60, "WiiUCrashLogDumper") + 128 + 16, 75 / 2 + 5, 50, Gfx::COLOR_ALT_TEXT, APP_VERSION_FULL, Gfx::ALIGN_VERTICAL);
+    Gfx::DrawIcon(32, 75 / 2, 60, Gfx::COLOR_ICON, 0xf0C5, Gfx::ALIGN_VERTICAL);
+    Gfx::Print(128, 75 / 2, 60, Gfx::COLOR_TEXT, "haxcopy", Gfx::ALIGN_VERTICAL);
+    Gfx::Print(Gfx::GetTextWidth(60, "haxcopy") + 128 + 16, 75 / 2 + 5, 50, Gfx::COLOR_ALT_TEXT, APP_VERSION_FULL, Gfx::ALIGN_VERTICAL);
     if (name) {
         Gfx::Print(Gfx::SCREEN_WIDTH - 32, 75 / 2, 50, Gfx::COLOR_ALT_TEXT, name, Gfx::ALIGN_VERTICAL | Gfx::ALIGN_RIGHT);
     }
