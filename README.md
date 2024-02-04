@@ -1,7 +1,9 @@
-# WiiUCrashLogDumper
-A simple Wii U homebrew for dumping the consoles crash logs.
+# <img src='res/icon.png' width='50'> haxcopy
+A simple Wii U homebrew for copying the ``hax`` folder and its contents to ``slc:/sys/hax``. No more FTP server needed to set up SD-less ISFShax!
 
-> :information_source: **WiiUCrashLogDumper requires the [MochaPayload](https://github.com/wiiu-env/MochaPayload)!**  
+Based on [@Maschell's](https://github.com/Maschell) WiiUCrashLogDumper.
+
+> :information_source: **haxcopy requires the [MochaPayload](https://github.com/wiiu-env/MochaPayload)!**  
 > Make sure to update to [Aroma](https://aroma.foryour.cafe) or [Tiramisu](https://tiramisu.foryour.cafe), in order to use this application.
 
 ## Screenshots
@@ -32,8 +34,8 @@ docker run -it --rm -v ${PWD}:/project wiiucrashlogdump_builder make clean
 
 `docker run --rm -v ${PWD}:/src ghcr.io/wiiu-env/clang-format:13.0.0-2 -r ./source -i`
 
-
 ## Additional Credits
+- [Maschell](https://github.com/Maschell) for creating [WiiUCrashLogDumper](https://github.com/wiiu-env/WiiUCrashLogDumper). The app is based on WiiUCrashLogDumper.
 - [@GaryOderNichts](https://github.com/GaryOderNichts) for creating [WiiUIdent](https://github.com/GaryOderNichts/WiiUIdent). The GUI is based on WiiUIdent.
 - [FontAwesome](https://fontawesome.com/) for the icons.
 - [Terminus Font](https://terminus-font.sourceforge.net/) for the monospace font.
