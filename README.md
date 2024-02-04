@@ -1,4 +1,4 @@
-# <img src='res/icon.png' width='50'> haxcopy
+# <img src='res/icon_rounded.png' width='50'> haxcopy
 A simple Wii U homebrew for copying the ``hax`` folder and its contents to ``slc:/sys/hax``. No more FTP server needed to set up SD-less ISFShax!
 
 Based on [@Maschell's](https://github.com/Maschell) WiiUCrashLogDumper.
@@ -7,7 +7,9 @@ Based on [@Maschell's](https://github.com/Maschell) WiiUCrashLogDumper.
 > Make sure to update to [Aroma](https://aroma.foryour.cafe) or [Tiramisu](https://tiramisu.foryour.cafe), in order to use this application.
 
 ## Screenshots
-![](res/screenshot.png)
+<img src='res/home.png' width='300'> <img src='res/load.png' width='300'> 
+
+<img src='res/main.png' width='300'> <img src='res/done.png' width='300'> 
 
 ## Building
 For building you need: 
