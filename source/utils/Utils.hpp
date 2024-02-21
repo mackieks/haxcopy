@@ -21,6 +21,4 @@ namespace Utils {
 
     bool CopyFile(const std::string &in, const std::string &out);
 
-    bool GetSerialId(std::string &serialID);
-
 } // namespace Utils
