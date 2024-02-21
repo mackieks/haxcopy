@@ -20,16 +20,16 @@ For building you need:
 - wiiu-curl
 - wiiu-mbedtls
 
-You can also build WiiUIdent using docker:
+You can also build haxcopy using docker:
 ```bash
 # Build docker image (only needed once)
-docker build . -t wiiucrashlogdump_builder
+docker build . -t haxcopy_builder
 
 # make 
-docker run -it --rm -v ${PWD}:/project wiiucrashlogdump_builder make
+docker run -it --rm -v ${PWD}:/project haxcopy_builder make
 
 # make clean
-docker run -it --rm -v ${PWD}:/project wiiucrashlogdump_builder make clean
+docker run -it --rm -v ${PWD}:/project haxcopy_builder make clean
 ```
 
 ## Format the code via docker
