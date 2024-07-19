@@ -1,6 +1,6 @@
 #include "MenuScreen.hpp"
 #include "AboutScreen.hpp"
-#include "DumpLogsScreen.hpp"
+#include "CopyScreen.hpp"
 #include "Gfx.hpp"
 
 MenuScreen::MenuScreen()
@@ -57,7 +57,7 @@ bool MenuScreen::Update(Input &input) {
     if (input.data.buttons_d & Input::BUTTON_A) {
         switch (mSelectedEntry) {
             case MENU_ID_DUMP_LOGS:
-                mSubscreen = std::make_unique<DumpLogsScreen>();
+                mSubscreen = std::make_unique<CopyScreen>();
                 break;
             case MENU_ID_ABOUT:
                 mSubscreen = std::make_unique<AboutScreen>();

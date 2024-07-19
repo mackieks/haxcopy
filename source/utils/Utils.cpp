@@ -28,19 +28,13 @@ namespace Utils {
             strcat(dirnoslash, "/");
         }
 
-        if (stat(dirnoslash, &filestat) == 0) {
-            return true;
-        }
-
-        return false;
+        return stat(dirnoslash, &filestat) == 0;
     }
 
     bool CreateSubfolder(const std::string &fullpath) {
         if (fullpath.empty()) {
             return false;
         }
-
-        int32_t result = 0;
 
         char dirnoslash[fullpath.length() + 1];
         strcpy(dirnoslash, fullpath.c_str());
@@ -51,38 +45,27 @@ namespace Utils {
             pos--;
         }
 
-        if (CheckFile(dirnoslash)) {
+        if (CheckFile(dirnoslash))
             return true;
-        } else {
-            char parentpath[strlen(dirnoslash) + 2];
-            strcpy(parentpath, dirnoslash);
-            char *ptr = strrchr(parentpath, '/');
 
-            if (!ptr) {
-                //! Device root directory (must be with '/')
-                strcat(parentpath, "/");
-                struct stat filestat {};
-                if (stat(parentpath, &filestat) == 0) {
-                    return true;
-                }
+        char parentpath[strlen(dirnoslash) + 2];
+        strcpy(parentpath, dirnoslash);
+        char *ptr = strrchr(parentpath, '/');
 
-                return false;
-            }
-
-            ptr++;
-            ptr[0] = '\0';
-
-            result = CreateSubfolder(parentpath);
+        if (!ptr) {
+            //! Device root directory (must be with '/')
+            strcat(parentpath, "/");
+            struct stat filestat {};
+            return stat(parentpath, &filestat) == 0;
         }
 
-        if (!result)
+        ptr++;
+        ptr[0] = '\0';
+
+        if (CreateSubfolder(parentpath) == 0)
             return false;
 
-        if (mkdir(dirnoslash, 0777) < 0) {
-            return false;
-        }
-
-        return true;
+        return mkdir(dirnoslash, 0777) >= 0;
     }
 
     bool CopyFile(const std::string &in, const std::string &out) {
@@ -96,24 +79,6 @@ namespace Utils {
             DEBUG_FUNCTION_LINE_ERR("Exception: (Tried to copy %s -> %s): %s", in.c_str(), out.c_str(), ex.what());
         }
         return false;
-    }
-
-    bool GetSerialId(std::string &serialID) {
-        bool result = false;
-        alignas(0x40) MCPSysProdSettings settings{};
-        auto handle = MCP_Open();
-        if (handle >= 0) {
-            if (MCP_GetSysProdSettings(handle, &settings) == 0) {
-                serialID = std::string(settings.code_id) + settings.serial_id;
-                result   = true;
-            } else {
-                DEBUG_FUNCTION_LINE_ERR("Failed to get SerialId");
-            }
-            MCP_Close(handle);
-        } else {
-            DEBUG_FUNCTION_LINE_ERR("MCP_Open failed");
-        }
-        return result;
     }
 
 } // namespace Utils

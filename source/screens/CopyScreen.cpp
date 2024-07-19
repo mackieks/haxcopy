@@ -1,23 +1,23 @@
-#include "DumpLogsScreen.hpp"
+#include "CopyScreen.hpp"
 #include "Gfx.hpp"
 #include "common.h"
 #include "utils/Utils.hpp"
 #include <ctime>
 
-DumpLogsScreen::DumpLogsScreen() {
+CopyScreen::CopyScreen() {
     mDestinationDirectory = HAX_DESTINATION_PATH;
 }
 
-DumpLogsScreen::~DumpLogsScreen() = default;
+CopyScreen::~CopyScreen() = default;
 
 bool subdirectoryExists = false;
 
 
-void DumpLogsScreen::DrawSimpleText(const std::string &text) const {
+void CopyScreen::DrawSimpleText(const std::string &text) const {
     Gfx::Print(Gfx::SCREEN_WIDTH / 2, Gfx::SCREEN_HEIGHT / 2, mDefaultFontSize, Gfx::COLOR_TEXT, text, Gfx::ALIGN_CENTER);
 }
 
-void DumpLogsScreen::DrawSimpleText(const std::vector<std::string> &items) const {
+void CopyScreen::DrawSimpleText(const std::vector<std::string> &items) const {
     int yOff = mDefaultYPos;
     for (const auto &item : items) {
         Gfx::Print(mDefaultXPos, yOff, mDefaultFontSize, Gfx::COLOR_TEXT, item, Gfx::ALIGN_VERTICAL);
@@ -25,20 +25,20 @@ void DumpLogsScreen::DrawSimpleText(const std::vector<std::string> &items) const
     }
 }
 
-void DumpLogsScreen::Draw() {
+void CopyScreen::Draw() {
     DrawTopBar("Copy /hax to SLC");
-    switch (mDumpState) {
-        case DUMP_STATE_SELECT:
+    switch (mCopyState) {
+        case COPY_STATE_SELECT:
             DrawSimpleText("Press \ue000 to copy hax folder to SLC");
             break;
-        case DUMP_STATE_ERROR:
+        case COPY_STATE_ERROR:
             DrawSimpleText("Copying failed. Press \ue001 to return");
             break;
-        case DUMP_STATE_CREATE_DIRECTORY:
-        case DUMP_STATE_OPEN_DIR:
+        case COPY_STATE_CREATE_DIRECTORY:
+        case COPY_STATE_OPEN_DIR:
             DrawSimpleText("Preparing to copy...");
             break;
-        case DUMP_STATE_COPY_FILE: {
+        case COPY_STATE_COPY_FILE: {
             if (!mFilesToCopy.empty()) {
                 std::string sourcePath = "sd:/hax/" + mFilesToCopy.front();
                 std::string log        = Utils::sprintf("Copying %s", sourcePath.c_str());
@@ -48,7 +48,7 @@ void DumpLogsScreen::Draw() {
             }
             break;
         }
-        case DUMP_STATE_DUMPING_DONE: {
+        case COPY_STATE_DONE: {
             auto userFriendlyDestinationPath = "slc:/sys/hax/";
             DrawSimpleText((std::vector<std::string>){"Copying done!",
                                                       "",
@@ -61,27 +61,24 @@ void DumpLogsScreen::Draw() {
     DrawBottomBar(nullptr, "\ue044 Exit", "\ue001 Back");
 }
 
-bool DumpLogsScreen::Update(Input &input) {
-    switch (mDumpState) {
-        case DUMP_STATE_SELECT: {
+bool CopyScreen::Update(Input &input) {
+    switch (mCopyState) {
+        case COPY_STATE_SELECT: {
             if (input.data.buttons_d & Input::BUTTON_B) {
                 return false;
-            } else if (input.data.buttons_d & Input::BUTTON_A) {
-                mDumpState = DUMP_STATE_CREATE_DIRECTORY;
+            }
+            if (input.data.buttons_d & Input::BUTTON_A) {
+                mCopyState = COPY_STATE_CREATE_DIRECTORY;
             }
             break;
         }
-        case DUMP_STATE_CREATE_DIRECTORY:
-            if (!Utils::CreateSubfolder(mDestinationDirectory)) {
-                mDumpState = DUMP_STATE_ERROR;
-                break;
-            }
-            mDumpState = DUMP_STATE_OPEN_DIR;
+        case COPY_STATE_CREATE_DIRECTORY:
+            mCopyState = Utils::CreateSubfolder(mDestinationDirectory) ? COPY_STATE_OPEN_DIR : COPY_STATE_ERROR;
             break;
-        case DUMP_STATE_OPEN_DIR:
+        case COPY_STATE_OPEN_DIR:
             mSourceDirectoryHandle = opendir(mSourceDirectory.c_str());
             if (mSourceDirectoryHandle == nullptr) {
-                mDumpState = DUMP_STATE_ERROR;
+                mCopyState = COPY_STATE_ERROR;
                 break;
             }
             struct dirent *dp;
@@ -95,9 +92,9 @@ bool DumpLogsScreen::Update(Input &input) {
                 }
                 mFilesToCopy.emplace(dp->d_name);
             }
-            mDumpState = DUMP_STATE_COPY_FILE;
+            mCopyState = COPY_STATE_COPY_FILE;
             break;
-        case DUMP_STATE_COPY_FILE: {
+        case COPY_STATE_COPY_FILE: {
             if (!mFilesToCopy.empty()) {
                 std::string filename = mFilesToCopy.front();
                 mFilesToCopy.pop();
@@ -105,23 +102,23 @@ bool DumpLogsScreen::Update(Input &input) {
                 std::string sourceFullPath      = mSourceDirectory + "/" + filename;
                 std::string destinationFullPath = mDestinationDirectory + "/" + filename;
                 if (!Utils::CopyFile(sourceFullPath, destinationFullPath)) {
-                    mDumpState = DUMP_STATE_ERROR;
+                    mCopyState = COPY_STATE_ERROR;
                 }
-                break;
-            } else {
-                if (subdirectoryExists) {   // copying done and we have subdir to enter
-                    mSourceDirectory      = HAX_PLUGINS_SOURCE_PATH;
-                    mDestinationDirectory = HAX_PLUGINS_DESTINATION_PATH;
-                    subdirectoryExists    = false;
-                    mDumpState            = DUMP_STATE_CREATE_DIRECTORY;
-                    break;
-                }
-                else mDumpState = DUMP_STATE_DUMPING_DONE;
                 break;
             }
+            if (subdirectoryExists) {   // copying done and we have subdir to enter
+                mSourceDirectory      = HAX_PLUGINS_SOURCE_PATH;
+                mDestinationDirectory = HAX_PLUGINS_DESTINATION_PATH;
+                subdirectoryExists    = false;
+                mCopyState            = COPY_STATE_CREATE_DIRECTORY;
+                break;
+            }
+
+            mCopyState = COPY_STATE_DONE;
+            break;
         }
-        case DUMP_STATE_DUMPING_DONE:
-        case DUMP_STATE_ERROR:
+        case COPY_STATE_DONE:
+        case COPY_STATE_ERROR:
             if (input.data.buttons_d & Input::BUTTON_B) {
                 return false;
             }

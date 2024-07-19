@@ -53,11 +53,7 @@ void MainScreen::Draw() {
 
 bool MainScreen::Update(Input &input) {
     if (mMenuScreen) {
-        if (!mMenuScreen->Update(input)) {
-            // menu wants to exit
-            return false;
-        }
-        return true;
+        return mMenuScreen->Update(input);
     }
 
     if (mStateFailure) {

@@ -30,9 +30,5 @@ void AboutScreen::Draw() {
 }
 
 bool AboutScreen::Update(Input &input) {
-    if (input.data.buttons_d & Input::BUTTON_B) {
-        return false;
-    }
-
-    return true;
+    return !(input.data.buttons_d & Input::BUTTON_B);
 }
