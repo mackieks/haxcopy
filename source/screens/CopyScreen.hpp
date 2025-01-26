@@ -3,6 +3,7 @@
 #include "common.h"
 #include <dirent.h>
 #include <queue>
+#include <set>
 
 class CopyScreen : public Screen {
 public:
@@ -20,6 +21,7 @@ private:
         COPY_STATE_CREATE_DIRECTORY,
         COPY_STATE_OPEN_DIR,
         COPY_STATE_COPY_FILE,
+        COPY_STATE_CLEANUP,
         COPY_STATE_DONE,
     };
     CopyState mCopyState = COPY_STATE_SELECT;
@@ -29,6 +31,7 @@ private:
     DIR *mSourceDirectoryHandle        = nullptr;
 
     std::queue<std::string> mFilesToCopy;
+    std::set<std::string> mFilesToDelete;
 
     const int mDefaultXPos     = 32;
     const int mDefaultYPos     = 128;

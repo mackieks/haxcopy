@@ -48,6 +48,15 @@ void CopyScreen::Draw() {
             }
             break;
         }
+        case COPY_STATE_CLEANUP: {
+            if (!mFilesToDelete.empty()) {
+                std::string log = Utils::sprintf("Deleting %s", *mFilesToDelete.begin());
+                DrawSimpleText(log);
+            } else {
+                DrawSimpleText("Cleaning up files...");
+            }
+            break;
+        }
         case COPY_STATE_DONE: {
             auto userFriendlyDestinationPath = "slc:/sys/hax/";
             DrawSimpleText((std::vector<std::string>){"Copying done!",
@@ -62,6 +71,7 @@ void CopyScreen::Draw() {
 }
 
 bool CopyScreen::Update(Input &input) {
+    DIR *destinationDirectoryHandle;
     switch (mCopyState) {
         case COPY_STATE_SELECT: {
             if (input.data.buttons_d & Input::BUTTON_B) {
@@ -76,12 +86,28 @@ bool CopyScreen::Update(Input &input) {
             mCopyState = Utils::CreateSubfolder(mDestinationDirectory) ? COPY_STATE_OPEN_DIR : COPY_STATE_ERROR;
             break;
         case COPY_STATE_OPEN_DIR:
-            mSourceDirectoryHandle = opendir(mSourceDirectory.c_str());
+            destinationDirectoryHandle = opendir(mDestinationDirectory.c_str());
             if (mSourceDirectoryHandle == nullptr) {
                 mCopyState = COPY_STATE_ERROR;
                 break;
             }
             struct dirent *dp;
+            while ((dp = readdir(destinationDirectoryHandle)) != nullptr) {
+                std::string fullPath = mSourceDirectory + "/" + dp->d_name;
+                struct stat filestat {};
+                if (stat(fullPath.c_str(), &filestat) < 0 ||
+                    (filestat.st_mode & S_IFMT) == S_IFDIR) { // if directory
+                    continue;
+                }
+                mFilesToDelete.emplace(dp->d_name);
+            }
+            closedir(destinationDirectoryHandle);
+
+            mSourceDirectoryHandle = opendir(mSourceDirectory.c_str());
+            if (mSourceDirectoryHandle == nullptr) {
+                mCopyState = COPY_STATE_ERROR;
+                break;
+            }           
             while ((dp = readdir(mSourceDirectoryHandle)) != nullptr) {
                 std::string sourceFullPath = mSourceDirectory + "/" + dp->d_name;
                 struct stat filestat {};
@@ -91,7 +117,9 @@ bool CopyScreen::Update(Input &input) {
                     continue;
                 }
                 mFilesToCopy.emplace(dp->d_name);
+                mFilesToDelete.erase(dp->d_name);
             }
+            closedir(destinationDirectoryHandle);
             mCopyState = COPY_STATE_COPY_FILE;
             break;
         case COPY_STATE_COPY_FILE: {
@@ -106,6 +134,17 @@ bool CopyScreen::Update(Input &input) {
                 }
                 break;
             }
+            mCopyState = COPY_STATE_CLEANUP;
+            break;
+        }
+        case COPY_STATE_CLEANUP:
+            if(!mFilesToDelete.empty()) {
+                std::string fullPath = mDestinationDirectory + "/" + *mFilesToDelete.begin();
+                mFilesToDelete.erase(mFilesToDelete.begin());
+                remove(fullPath.c_str());
+                break;
+            }
+
             if (subdirectoryExists) {   // copying done and we have subdir to enter
                 mSourceDirectory      = HAX_PLUGINS_SOURCE_PATH;
                 mDestinationDirectory = HAX_PLUGINS_DESTINATION_PATH;
@@ -113,10 +152,8 @@ bool CopyScreen::Update(Input &input) {
                 mCopyState            = COPY_STATE_CREATE_DIRECTORY;
                 break;
             }
-
             mCopyState = COPY_STATE_DONE;
             break;
-        }
         case COPY_STATE_DONE:
         case COPY_STATE_ERROR:
             if (input.data.buttons_d & Input::BUTTON_B) {
