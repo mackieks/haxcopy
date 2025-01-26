@@ -9,5 +9,5 @@
 #define HAX_PLUGINS_SOURCE_PATH			   HAX_SOURCE_PATH "/ios_plugins"
 #define HAX_PLUGINS_DESTINATION_PATH       HAX_DESTINATION_PATH "/ios_plugins"
 
-#define APP_VERSION                "v0.1"
+#define APP_VERSION                "v1.0"
 #define APP_VERSION_FULL           APP_VERSION APP_VERSION_EXTRA
