@@ -26,7 +26,8 @@ private:
     };
     CopyState mCopyState = COPY_STATE_SELECT;
 
-    std::string mDestinationDirectory;
+    std::string mError = "Unknown";
+    std::string mDestinationDirectory = HAX_DESTINATION_PATH;
     std::string mSourceDirectory = HAX_SOURCE_PATH;
     DIR *mSourceDirectoryHandle        = nullptr;
 

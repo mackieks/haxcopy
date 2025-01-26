@@ -5,7 +5,7 @@
 #include <ctime>
 
 CopyScreen::CopyScreen() {
-    mDestinationDirectory = HAX_DESTINATION_PATH;
+
 }
 
 CopyScreen::~CopyScreen() = default;
@@ -32,7 +32,7 @@ void CopyScreen::Draw() {
             DrawSimpleText("Press \ue000 to copy hax folder to SLC");
             break;
         case COPY_STATE_ERROR:
-            DrawSimpleText("Copying failed. Press \ue001 to return");
+            DrawSimpleText(mError + ". Press \ue001 to return");
             break;
         case COPY_STATE_CREATE_DIRECTORY:
         case COPY_STATE_OPEN_DIR:
@@ -87,7 +87,8 @@ bool CopyScreen::Update(Input &input) {
             break;
         case COPY_STATE_OPEN_DIR:
             destinationDirectoryHandle = opendir(mDestinationDirectory.c_str());
-            if (mSourceDirectoryHandle == nullptr) {
+            if (destinationDirectoryHandle == nullptr) {
+                mError = "Error opening " + mDestinationDirectory;
                 mCopyState = COPY_STATE_ERROR;
                 break;
             }
@@ -130,6 +131,7 @@ bool CopyScreen::Update(Input &input) {
                 std::string sourceFullPath      = mSourceDirectory + "/" + filename;
                 std::string destinationFullPath = mDestinationDirectory + "/" + filename;
                 if (!Utils::CopyFile(sourceFullPath, destinationFullPath)) {
+                    mError = "Copying " + filename + " failed";
                     mCopyState = COPY_STATE_ERROR;
                 }
                 break;
