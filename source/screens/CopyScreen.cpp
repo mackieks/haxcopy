@@ -50,7 +50,7 @@ void CopyScreen::Draw() {
         }
         case COPY_STATE_CLEANUP: {
             if (!mFilesToDelete.empty()) {
-                std::string log = Utils::sprintf("Deleting %s", *mFilesToDelete.begin());
+                std::string log = Utils::sprintf("Deleting %s", mFilesToDelete.begin()->c_str());
                 DrawSimpleText(log);
             } else {
                 DrawSimpleText("Cleaning up files...");
@@ -94,7 +94,7 @@ bool CopyScreen::Update(Input &input) {
             }
             struct dirent *dp;
             while ((dp = readdir(destinationDirectoryHandle)) != nullptr) {
-                std::string fullPath = mSourceDirectory + "/" + dp->d_name;
+                std::string fullPath = mDestinationDirectory + "/" + dp->d_name;
                 struct stat filestat {};
                 if (stat(fullPath.c_str(), &filestat) < 0 ||
                     (filestat.st_mode & S_IFMT) == S_IFDIR) { // if directory
